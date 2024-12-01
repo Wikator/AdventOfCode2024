@@ -1,20 +1,27 @@
+import kotlin.math.abs
+
 fun main() {
+
+    fun getPairOfLists(input: List<String>): Pair<List<Int>, List<Int>> =
+        input.fold(Pair(emptyList(), emptyList())) { acc, curr ->
+            val splitText = curr.split("   ")
+            Pair(acc.first + splitText.first().toInt(), acc.second + splitText.last().toInt())
+        }
+    
     fun part1(input: List<String>): Int {
-        return input.size
+        val twoLists = getPairOfLists(input)
+        val twoListsZipped = twoLists.first.sorted().zip(twoLists.second.sorted())
+        return twoListsZipped.fold(0) { acc, curr -> acc + abs(curr.first - curr.second) }
     }
 
     fun part2(input: List<String>): Int {
-        return input.size
+        fun countOccurrences(list: List<Int>, element: Int): Int =
+            list.fold(0) { acc, curr -> acc + if (curr == element) 1 else 0}
+        
+        val twoLists = getPairOfLists(input)
+        return twoLists.first.fold(0) { acc, curr -> acc + curr * countOccurrences(twoLists.second, curr) }
     }
-
-    // Test if implementation meets criteria from the description, like:
-    check(part1(listOf("test_input")) == 1)
-
-    // Or read a large test input from the `src/Day01_test.txt` file:
-    val testInput = readInput("Day01_test")
-    check(part1(testInput) == 1)
-
-    // Read the input from the `src/Day01.txt` file.
+    
     val input = readInput("Day01")
     part1(input).println()
     part2(input).println()

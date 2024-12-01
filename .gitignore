@@ -3,4 +3,5 @@
 .kotlin/
 build
 src/**/*.txt
+data/**/*.txt
 local.properties
