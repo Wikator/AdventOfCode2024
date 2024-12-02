@@ -16,24 +16,27 @@ fun main() {
         val firstNumber = numbers.first()
         val order = if (firstNumber < numbers[1]) SortOrder.Ascending else SortOrder.Descending
         
-        fun isSafeHelper(numbers: List<Int>, lastNumber: Int, canIgnore: Boolean): Boolean {
-            fun detectedUnsafe(): Boolean =
-                when (canIgnore) {
-                    true -> isSafeHelper(numbers.drop(1), lastNumber, false)
-                    false -> false
-                }
-            
+        tailrec fun isSafeHelper(numbers: List<Int>, lastNumber: Int, canIgnore: Boolean): Boolean {
             if (numbers.isEmpty()) return true
             
             val currentNumber = numbers.first()
             val distance = currentNumber - lastNumber
             val absoluteDistance = abs(distance)
 
-            if (absoluteDistance < 1 || absoluteDistance > 3) return detectedUnsafe()
+            if (absoluteDistance < 1 || absoluteDistance > 3) {
+                if (canIgnore) return isSafeHelper(numbers.drop(1), lastNumber, false)
+                return false
+            }
             
             when (order) {
-                SortOrder.Ascending -> { if (distance <= 0) return detectedUnsafe() }
-                SortOrder.Descending -> { if (distance >= 0) return detectedUnsafe() }
+                SortOrder.Ascending -> if (distance <= 0) {
+                    if (canIgnore) return isSafeHelper(numbers.drop(1), lastNumber, false)
+                    return false
+                }
+                SortOrder.Descending -> if (distance >= 0) {
+                    if (canIgnore) return isSafeHelper(numbers.drop(1), lastNumber, false)
+                    return false
+                }
             }
             
             return isSafeHelper(numbers.drop(1), currentNumber, canIgnore)
