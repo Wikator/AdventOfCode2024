@@ -53,12 +53,12 @@ fun main() {
 
     fun part1(input: List<String>): Int {
         val numbers = convertToIntegers(input)
-        return numbers.fold(0) { acc, curr -> acc + if (isSafe(curr, false)) 1 else 0 }
+        return numbers.count { number -> isSafe(number, false) }
     }
 
     fun part2(input: List<String>): Int {
         val numbers = convertToIntegers(input)
-        return numbers.fold(0) { acc, curr -> acc + if (isSafe(curr, true)) 1 else 0 }
+        return numbers.count { number -> isSafe(number, true) }
     }
 
     val input = readInput("Day02")

@@ -18,7 +18,7 @@ fun main() {
 
     fun part2(input: List<String>): Int {
         fun countOccurrences(list: List<Int>, element: Int): Int =
-            list.fold(0) { acc, curr -> acc + if (curr == element) 1 else 0 }
+            list.count { curr -> curr == element }
         
         val (list1, list2) = getPairOfLists(input)
         return list1.fold(0) { acc, curr -> acc + curr * countOccurrences(list2, curr) }
