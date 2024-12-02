@@ -12,11 +12,12 @@ fun main() {
             splitText.map { number -> number.toInt() }
         }
     
+    fun getOrder(numbers: List<Int>): SortOrder =
+        if (numbers[0] < numbers[1]) SortOrder.Ascending else SortOrder.Descending 
+    
     fun isSafe(numbers: List<Int>, problemDampener: Boolean): Boolean {
-        val firstNumber = numbers.first()
-        val order = if (firstNumber < numbers[1]) SortOrder.Ascending else SortOrder.Descending
         
-        tailrec fun isSafeHelper(numbers: List<Int>, lastNumber: Int, canIgnore: Boolean): Boolean {
+        tailrec fun isSafeHelper(numbers: List<Int>, lastNumber: Int, order: SortOrder, canIgnore: Boolean): Boolean {
             if (numbers.isEmpty()) return true
             
             val currentNumber = numbers.first()
@@ -24,25 +25,30 @@ fun main() {
             val absoluteDistance = abs(distance)
 
             if (absoluteDistance < 1 || absoluteDistance > 3) {
-                if (canIgnore) return isSafeHelper(numbers.drop(1), lastNumber, false)
+                if (canIgnore) return isSafeHelper(numbers.drop(1), lastNumber, order, false)
                 return false
             }
             
             when (order) {
                 SortOrder.Ascending -> if (distance <= 0) {
-                    if (canIgnore) return isSafeHelper(numbers.drop(1), lastNumber, false)
+                    if (canIgnore) return isSafeHelper(numbers.drop(1), lastNumber, order, false)
                     return false
                 }
                 SortOrder.Descending -> if (distance >= 0) {
-                    if (canIgnore) return isSafeHelper(numbers.drop(1), lastNumber, false)
+                    if (canIgnore) return isSafeHelper(numbers.drop(1), lastNumber, order, false)
                     return false
                 }
             }
             
-            return isSafeHelper(numbers.drop(1), currentNumber, canIgnore)
+            return isSafeHelper(numbers.drop(1), currentNumber, order, canIgnore)
         }
         
-        return isSafeHelper(numbers.drop(1), firstNumber, problemDampener)
+        if (!problemDampener)
+            return isSafeHelper(numbers.drop(1), numbers.first(), getOrder(numbers), false)
+        
+        val reversedNumbers = numbers.reversed()
+        return isSafeHelper(numbers.drop(1), numbers.first(), getOrder(numbers), true)
+                || isSafeHelper(reversedNumbers.drop(1), reversedNumbers.first(), getOrder(reversedNumbers), true)
     }
 
     fun part1(input: List<String>): Int {
@@ -52,9 +58,7 @@ fun main() {
 
     fun part2(input: List<String>): Int {
         val numbers = convertToIntegers(input)
-        return numbers.fold(0) { acc, curr ->
-            acc + if (isSafe(curr, true) || isSafe(curr.reversed(), true)) 1 else 0
-        }
+        return numbers.fold(0) { acc, curr -> acc + if (isSafe(curr, true)) 1 else 0 }
     }
 
     val input = readInput("Day02")
