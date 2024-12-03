@@ -20,7 +20,7 @@ fun main() {
     }
 
     fun part2(input: String): Int {
-        fun getConditionalInstructions(program: String): Sequence<Pair<Int, Int>> {
+        fun getEnabledInstructions(program: String): Sequence<Pair<Int, Int>> {
             val splitTextByDo = program.split("do()")
             val enabledInstructions = splitTextByDo.map { text ->
                 val splitText = text.split("don't()")
@@ -30,7 +30,7 @@ fun main() {
             return getInstructions(combinedEnabledInstructions)
         }
 
-        val instructions = getConditionalInstructions(input)
+        val instructions = getEnabledInstructions(input)
         return addMultipliedNumbers(instructions)
     }
 
