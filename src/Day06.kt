@@ -2,20 +2,25 @@ enum class Position {
     Obstacle, Empty, GuardUp, GuardRight, GuardDown, GuardLeft
 }
 
+enum class Direction {
+    Up, Right, Down, Left
+}
+
 data class Coords(val x:Int, val y: Int)
 
-fun moveGuardRight(position: Position): Position =
-    when (position) {
-        Position.GuardUp -> Position.GuardRight
-        Position.GuardRight -> Position.GuardDown
-        Position.GuardDown -> Position.GuardLeft
-        Position.GuardLeft -> Position.GuardUp
-        else -> throw IllegalArgumentException("Not a guard")
+data class GuardPosition(val coords: Coords, val direction: Direction)
+
+fun moveRight(direction: Direction): Direction =
+    when (direction) {
+        Direction.Up -> Direction.Right
+        Direction.Right -> Direction.Down
+        Direction.Down -> Direction.Left
+        Direction.Left -> Direction.Up
     }
 
 fun main() {
 
-    fun getPositions(input: List<String>): List<MutableList<Position>> =
+    fun getPositions(input: List<String>): List<List<Position>> =
         input.map { text ->
             text.map { char ->
                 when (char) {
@@ -30,18 +35,14 @@ fun main() {
             }.toMutableList()
         }
     
-    fun getGuardPosition(positions: List<MutableList<Position>>): Coords {
+    fun getGuardPosition(positions: List<List<Position>>): GuardPosition {
         for (i in positions.indices) {
             for (j in positions[i].indices) {
-                if (
-                    positions[i][j] in listOf(
-                        Position.GuardUp,
-                        Position.GuardRight,
-                        Position.GuardDown,
-                        Position.GuardLeft
-                    )
-                ) {
-                    return Coords(i, j)
+                when {
+                    positions[i][j] == Position.GuardUp -> return GuardPosition(Coords(i, j), Direction.Up)
+                    positions[i][j] == Position.GuardRight -> return GuardPosition(Coords(i, j), Direction.Right)
+                    positions[i][j] == Position.GuardDown -> return GuardPosition(Coords(i, j), Direction.Down)
+                    positions[i][j] == Position.GuardLeft -> return GuardPosition(Coords(i, j), Direction.Left)
                 }
             }
         }
@@ -51,87 +52,81 @@ fun main() {
 
     fun part1(input: List<String>): Int {
         val positions = getPositions(input)
-        val nextGuard = getGuardPosition(positions)
+        val initialGuardPosition = getGuardPosition(positions)
         
         fun outOfBounds(coords: Coords): Boolean =
             coords.x < 0 || coords.x >= positions.size || coords.y < 0 || coords.y >= positions[coords.x].size
         
-        tailrec fun getAllGuardPositions(coords: Coords, visited: Set<Coords>): Set<Coords> {
-            
-            val guard = positions[coords.x][coords.y]
-            val newCoords = when (guard) {
-                Position.GuardUp -> Coords(coords.x - 1, coords.y)
-                Position.GuardRight -> Coords(coords.x, coords.y + 1)
-                Position.GuardDown -> Coords(coords.x + 1, coords.y)
-                Position.GuardLeft -> Coords(coords.x, coords.y - 1)
-                else -> throw IllegalArgumentException("Not a guard")
+        tailrec fun getAllGuardPositions(guardPosition: GuardPosition, visited: Set<Coords>): Set<Coords> {
+
+            val newCoords = when (guardPosition.direction) {
+                Direction.Up -> Coords(guardPosition.coords.x - 1, guardPosition.coords.y)
+                Direction.Right -> Coords(guardPosition.coords.x, guardPosition.coords.y + 1)
+                Direction.Down -> Coords(guardPosition.coords.x + 1, guardPosition.coords.y)
+                Direction.Left -> Coords(guardPosition.coords.x, guardPosition.coords.y - 1)
             }
 
-            if (outOfBounds(newCoords)) {
-                return visited
+            return if (outOfBounds(newCoords)) {
+                visited
             } else if (positions[newCoords.x][newCoords.y] == Position.Obstacle) {
-                positions[coords.x][coords.y] = moveGuardRight(guard)
-                return getAllGuardPositions(coords, visited)
+                getAllGuardPositions(GuardPosition(guardPosition.coords, moveRight(guardPosition.direction)), visited)
             } else {
-                positions[newCoords.x][newCoords.y] = guard
-                positions[coords.x][coords.y] = Position.Empty
-                return getAllGuardPositions(newCoords, visited + newCoords)
+                getAllGuardPositions(GuardPosition(newCoords, guardPosition.direction), visited + newCoords)
             }
         }
         
-        return getAllGuardPositions(nextGuard, emptySet()).size
+        return getAllGuardPositions(initialGuardPosition, emptySet()).size
     }
 
     fun part2(input: List<String>): Int {
-        val positions = getPositions(input)
-        val nextGuard = getGuardPosition(positions)
-        val originalGuard = positions[nextGuard.x][nextGuard.y]
+        val positions = getPositions(input).map { it.toMutableList() }
+        val initialGuardPosition = getGuardPosition(positions)
+
 
         fun outOfBounds(coords: Coords): Boolean =
             coords.x < 0 || coords.x >= positions.size || coords.y < 0 || coords.y >= positions[coords.x].size
 
-        tailrec fun checkForInfiniteLoop(coords: Coords, firstIter: Boolean): Boolean {
-            val guard = positions[coords.x][coords.y]
-            
-            if (!firstIter && coords.x == nextGuard.x && coords.y == nextGuard.y && guard == originalGuard) {
-                positions[coords.x][coords.y] = Position.Empty
-                return true
-            }
-            
-            val newCoords = when (guard) {
-                Position.GuardUp -> Coords(coords.x - 1, coords.y)
-                Position.GuardRight -> Coords(coords.x, coords.y + 1)
-                Position.GuardDown -> Coords(coords.x + 1, coords.y)
-                Position.GuardLeft -> Coords(coords.x, coords.y - 1)
-                else -> throw IllegalArgumentException("Not a guard")
+        tailrec fun checkForInfiniteLoop(guardPosition: GuardPosition, visited: Set<GuardPosition>): Boolean {
+
+            val newCoords = when (guardPosition.direction) {
+                Direction.Up -> Coords(guardPosition.coords.x - 1, guardPosition.coords.y)
+                Direction.Right -> Coords(guardPosition.coords.x, guardPosition.coords.y + 1)
+                Direction.Down -> Coords(guardPosition.coords.x + 1, guardPosition.coords.y)
+                Direction.Left -> Coords(guardPosition.coords.x, guardPosition.coords.y - 1)
             }
 
-            if (outOfBounds(newCoords)) {
-                positions[coords.x][coords.y] = Position.Empty
-                println("No")
-                return false
+            return if (outOfBounds(newCoords)) {
+                false
             } else if (positions[newCoords.x][newCoords.y] == Position.Obstacle) {
-                positions[coords.x][coords.y] = moveGuardRight(guard)
-                return checkForInfiniteLoop(coords, false)
+                val newGuardPosition = GuardPosition(guardPosition.coords, moveRight(guardPosition.direction))
+                if (newGuardPosition in visited) {
+                    true
+                } else {
+                    checkForInfiniteLoop(newGuardPosition, visited + newGuardPosition)
+                }
             } else {
-                positions[newCoords.x][newCoords.y] = guard
-                positions[coords.x][coords.y] = Position.Empty
-                return checkForInfiniteLoop(newCoords, false)
+                val newGuardPosition = GuardPosition(newCoords, guardPosition.direction)
+                if (newGuardPosition in visited) {
+                    true
+                } else {
+                    checkForInfiniteLoop(newGuardPosition, visited + newGuardPosition)
+                }
+
             }
         }
 
         var count = 0
 
+
+
         for (i in positions.indices) {
             for (j in positions[i].indices) {
-                if (positions[i][j] != Position.Obstacle && positions[i][j] != originalGuard) {
+                if (positions[i][j] == Position.Empty) {
+                    println("Testing row $i column $j")
                     positions[i][j] = Position.Obstacle
-                    println(i)
-                    println(j)
-                    if (checkForInfiniteLoop(nextGuard, true)) count++
+                    if (checkForInfiniteLoop(initialGuardPosition, emptySet())) count++
 
                     positions[i][j] = Position.Empty
-                    positions[nextGuard.x][nextGuard.y] = originalGuard
                 }
             }
         }
@@ -139,7 +134,7 @@ fun main() {
         return count
     }
 
-    val input = readInput("Day06_test")
+    val input = readInput("Day06")
     part1(input).println()
     part2(input).println()
 }
