@@ -79,7 +79,7 @@ fun main() {
             while (true) {
                 val newCoords = guardPosition.getNextCoords()
                 
-                if (outOfBounds(positions, newCoords)) return visited
+                if (outOfBounds(positions, newCoords)) return visited.toSet()
                 
                 val newGuardPosition = if (positions[newCoords.x][newCoords.y] == Position.Obstacle) {
                     GuardPosition(guardPosition.coords, guardPosition.direction.moveRight())
@@ -108,7 +108,7 @@ fun main() {
             while (true) {
                 val newCoords = guardPosition.getNextCoords()
                 
-                if (outOfBounds(positions, newCoords)) return path
+                if (outOfBounds(positions, newCoords)) return path.toList()
 
                 val newGuardPosition = if (positions[newCoords.x][newCoords.y] == Position.Obstacle) {
                     GuardPosition(guardPosition.coords, guardPosition.direction.moveRight())
@@ -148,12 +148,9 @@ fun main() {
         }
 
         val guardPath = getGuardPath(initialGuardPosition)
-        val relevantNewObstaclePositions = guardPath.fold(emptySet<GuardPosition>()) { acc, curr ->
-            if (acc.any { it.coords == curr.coords })
-                acc
-            else
-                acc + curr
-        }
+        val relevantNewObstaclePositions = guardPath.fold(mutableMapOf<Coords, GuardPosition>()) { acc, curr ->
+            acc.apply { putIfAbsent(curr.coords, curr) }
+        }.values.toSet()
         
         return relevantNewObstaclePositions.count { position ->
             val guardPosition = position.getPreviousCoords()
@@ -162,6 +159,8 @@ fun main() {
     }
 
     val input = readInput("Day06")
+
     part1(input).println()
     part2(input).println()
+
 }
