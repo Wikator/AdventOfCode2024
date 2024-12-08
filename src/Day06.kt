@@ -13,8 +13,6 @@ enum class Direction {
     }
 }
 
-data class Coords(val x:Int, val y: Int)
-
 data class GuardPosition(val coords: Coords, val direction: Direction) {
 
     fun getNextCoords(): Coords = when (direction) {
@@ -64,8 +62,8 @@ fun main() {
         throw Exception("No guard found")
     }
 
-    fun outOfBounds(positions: List<List<Position>>, coords: Coords): Boolean =
-        coords.x < 0 || coords.x >= positions.size || coords.y < 0 || coords.y >= positions[coords.x].size
+    fun outOfBounds(input: List<List<Position>>, coords: Coords): Boolean =
+        coords.x < 0 || coords.x >= input.size || coords.y < 0 || coords.y >= input[coords.x].size
 
     fun part1(input: List<String>): Int {
         val positions = getPositions(input)

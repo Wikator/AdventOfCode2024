@@ -3,6 +3,10 @@ import java.security.MessageDigest
 import kotlin.io.path.Path
 import kotlin.io.path.readText
 
+data class Coords(val x: Int, val y:Int) {
+    fun distance(coords: Coords) = Coords(this.x - coords.x, this.y - coords.y)
+}
+
 /**
  * Reads lines from the given input txt file.
  */
