@@ -24,9 +24,6 @@ fun main() {
         }
     }
 
-    fun outOfBounds(input: List<String>, coords: Coords): Boolean =
-        coords.x < 0 || coords.x >= input.size || coords.y < 0 || coords.y >= input[coords.x].length
-
     fun part1(input: List<String>): Int {
         val antennas = getAntennas(input)
         val antiNodes = mutableSetOf<Coords>()
