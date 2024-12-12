@@ -5,6 +5,9 @@ import kotlin.io.path.readText
 
 data class Coords(val x: Int, val y:Int) {
     fun distance(coords: Coords) = Coords(this.x - coords.x, this.y - coords.y)
+    
+    fun adjacentCoords() = setOf(Coords(this.x - 1, this.y), Coords(this.x + 1, this.y),
+        Coords(this.x, this.y - 1), Coords(this.x, this.y + 1))
 }
 
 fun outOfBounds(input: List<String>, coords: Coords): Boolean =

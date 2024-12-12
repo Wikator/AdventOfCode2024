@@ -1,9 +1,5 @@
 fun main() {
     
-    fun getNextCoords(coords: Coords): Set<Coords> =
-        setOf(Coords(coords.x - 1, coords.y), Coords(coords.x + 1, coords.y),
-            Coords(coords.x, coords.y - 1), Coords(coords.x, coords.y + 1))
-    
     fun sumOfTwoDimensional(input: List<String>, operation: (Coords) -> Int): Int =
         input.indices.sumOf { i ->
             input[i].indices.sumOf { j ->
@@ -23,7 +19,7 @@ fun main() {
                 }
 
                 val nextDigit = input[currentCoords.x][currentCoords.y] + 1
-                for (nextCoords in getNextCoords(currentCoords)) {
+                for (nextCoords in currentCoords.adjacentCoords()) {
                     if (!outOfBounds(input, nextCoords) && input[nextCoords.x][nextCoords.y] == nextDigit)
                         findTrailheadsHelper(nextCoords)
                 }
@@ -46,7 +42,7 @@ fun main() {
                 }
 
                 val nextDigit = input[currentCoords.x][currentCoords.y] + 1
-                return getNextCoords(currentCoords).sumOf { nextCoords ->
+                return currentCoords.adjacentCoords().sumOf { nextCoords ->
                     if (!outOfBounds(input, nextCoords) && input[nextCoords.x][nextCoords.y] == nextDigit)
                         findSumOfRatingsHelper(nextCoords, acc)
                     else
