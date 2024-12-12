@@ -1,26 +1,28 @@
 import kotlin.math.abs
 
 fun main() {
-    data class Plot(val plant: Char, val coords: Coords)
-
-    fun getPlots(input: List<String>): Collection<List<Coords>> {
+    fun getGroupedPlants(input: List<String>): Collection<List<Coords>> {
         val plots = input.flatMapIndexed { x, row ->
-            row.mapIndexed { y, char -> Plot(char, Coords(x, y))}
+            row.mapIndexed { y, char -> Pair(char, Coords(x, y)) }
         }
-
-        val groupedPlots = plots.groupBy(
-            keySelector = { it.plant },
-            valueTransform = { it.coords }
+    
+        val groupedPlants = plots.groupBy(
+            keySelector = { it.first },
+            valueTransform = { it.second }
         )
-
-        return groupedPlots.values
+    
+        return groupedPlants.values
     }
 
-    tailrec fun getAdjacentPlants(plots: List<Coords>, currentCoords: List<Coords>, acc: MutableSet<Coords>): Set<Coords> {
-        if (currentCoords.isEmpty()) return acc.toSet()
+    // Searches for coords of all plants in the same region as plants in currentPlantCoords.
+    // currentPlantCoords should have initially plants all in the same region, or a single plant.
+    tailrec fun getPlantRegion(plants: List<Coords>, currentPlantCoords: List<Coords>,
+                               acc: MutableSet<Coords> = mutableSetOf()): Set<Coords> {
+        
+        if (currentPlantCoords.isEmpty()) return acc.toSet()
 
-        val newCurrentCoords = currentCoords.flatMap { curr ->
-            val adjacentPlots = plots.filter { coords ->
+        val newCurrentCoords = currentPlantCoords.flatMap { curr ->
+            val adjacentPlants = plants.filter { coords ->
                 if (coords == curr) {
                     true
                 } else {
@@ -29,38 +31,74 @@ fun main() {
                 }
             }
 
-            adjacentPlots.filter { coords -> acc.add(coords) }
+            adjacentPlants.filter { coords -> acc.add(coords) }
         }
 
-        return getAdjacentPlants(plots, newCurrentCoords, acc)
+        return getPlantRegion(plants, newCurrentCoords, acc)
     }
+    
+    fun getRegions(plants: List<Coords>): List<Set<Coords>> {
+        val regions = mutableListOf<Set<Coords>>()
 
+        for (coords in plants) {
+            if (regions.any { group -> group.any { it == coords } }) continue
 
+            val newRegion = getPlantRegion(plants, listOf(coords))
+            regions.add(newRegion)
+        }
+        
+        return regions
+    }
+    
     fun part1(input: List<String>): Int {
-        val plots = getPlots(input)
+        val groupedPlants = getGroupedPlants(input)
 
-        return plots.sumOf { plot ->
-            val groups = mutableListOf<Set<Coords>>()
+        return groupedPlants.sumOf { plants ->
+            val regions = getRegions(plants)
 
-            for (coords in plot) {
-                if (groups.any { group -> group.any { it == coords } }) continue
-
-                val newGroup = getAdjacentPlants(plot, listOf(coords), mutableSetOf())
-                groups.add(newGroup)
-            }
-
-            groups.sumOf { group ->
-                val area = group.size
-                area * group.sumOf { coords ->
+            regions.sumOf { region ->
+                val area = region.size
+                val perimeter = region.sumOf { coords ->
                     val adjacentCoords = coords.adjacentCoords()
-                    adjacentCoords.count { it !in group }
+                    adjacentCoords.count { it !in region }
                 }
+                area * perimeter
             }
         }
     }
 
     fun part2(input: List<String>): Int {
-        return input.size
+        val groupedPlants = getGroupedPlants(input)
+
+        return groupedPlants.sumOf { plot ->
+            val regions = getRegions(plot)
+
+            regions.sumOf { region ->
+                val area = region.size
+
+                val plantBorders = region.associateWith { coords ->
+                    val adjacentCoords = coords.adjacentCoords()
+                    adjacentCoords.filter { it !in region }
+                }
+
+                val perimeter = plantBorders.entries.sumOf { (plant, borders) ->
+                    borders.count { curr ->
+                        val coordsMovement = when {
+                            curr.x < plant.x -> { coords: Coords -> Coords(coords.x, coords.y + 1) }
+                            curr.x > plant.x -> { coords: Coords -> Coords(coords.x, coords.y - 1) }
+                            curr.y < plant.y -> { coords: Coords -> Coords(coords.x - 1, coords.y) }
+                            curr.y > plant.y -> { coords: Coords -> Coords(coords.x + 1, coords.y) }
+                            else -> throw Error("This should not have happened!")
+                        }
+
+                        val relevantBorders = plantBorders[coordsMovement(plant)]
+                        relevantBorders == null || coordsMovement(curr) !in relevantBorders
+                    }
+                }
+
+                perimeter * area
+            }
+        }
     }
 
     val input = readInput("Day12")
