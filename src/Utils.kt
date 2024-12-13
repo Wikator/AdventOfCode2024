@@ -10,6 +10,13 @@ data class Coords(val x: Int, val y:Int) {
         Coords(this.x, this.y - 1), Coords(this.x, this.y + 1))
 }
 
+data class LongCoords(val x: Long, val y:Long) {
+    fun distance(coords: LongCoords) = LongCoords(this.x - coords.x, this.y - coords.y)
+
+    fun adjacentCoords() = setOf(LongCoords(this.x - 1, this.y), LongCoords(this.x + 1, this.y),
+        LongCoords(this.x, this.y - 1), LongCoords(this.x, this.y + 1))
+}
+
 fun outOfBounds(input: List<String>, coords: Coords): Boolean =
     coords.x < 0 || coords.x >= input.size || coords.y < 0 || coords.y >= input[coords.x].length
 
