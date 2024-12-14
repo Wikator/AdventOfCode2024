@@ -10,6 +10,27 @@ fun main() {
             Robot(Coords(numbers[1], numbers[0]), Coords(numbers[3], numbers[2]))
         }
     }
+    
+    fun moveRobot(robot: Robot, height: Int, width: Int) {
+        val newX = run {
+            val x = robot.position.x + robot.velocity.x
+            when {
+                x < 0 -> x + height
+                x >= height -> x - height
+                else -> x
+            }
+        }
+        val newY = run {
+            val y = robot.position.y + robot.velocity.y
+            when {
+                y < 0 -> y + width
+                y >= width -> y - width
+                else -> y
+            }
+        }
+
+        robot.position = Coords(newX, newY)
+    }
 
     fun part1(input: List<String>): Int {
         val robots = getRobots(input)
@@ -18,26 +39,7 @@ fun main() {
         val height = 103
         
         for (i in (0 until 100)) {
-            for (robot in robots) {
-                val newX = run {
-                    val x = robot.position.x + robot.velocity.x
-                    when {
-                        x < 0 -> x + height
-                        x >= height -> x - height
-                        else -> x
-                    }
-                }
-                val newY = run { 
-                    val y = robot.position.y + robot.velocity.y
-                    when {
-                        y < 0 -> y + width
-                        y >= width -> y - width
-                        else -> y
-                    }
-                }
-                
-                robot.position = Coords(newX, newY)
-            }
+            robots.forEach { moveRobot(it, height, width) }
         }
 
         val middleHeight = height / 2
@@ -51,7 +53,55 @@ fun main() {
     }
 
     fun part2(input: List<String>): Int {
-        return input.size
+        val robots = getRobots(input)
+
+        val width = 101
+        val height = 103
+
+        fun fullLine(start: Int, end: Int, row: Int): Boolean =
+            (start..end).all { y -> robots.any { it.position.x == row && it.position.y == y } }
+
+        for (seconds in (1 until Int.MAX_VALUE)) {
+            robots.forEach { moveRobot(it, height, width) }
+            
+            for (robot in robots) {
+                var start = robot.position.y
+                var end = robot.position.y
+                var curr = robot.position.x
+                var newLayer = false
+                
+                do {
+                    start--
+                    end++
+                    curr++
+                    
+                    if (fullLine(start, end, curr)) {
+                        newLayer = false
+                        continue
+                    }
+
+                    start++
+                    end--
+
+                    if (fullLine(start, end, curr)) {
+                        if (newLayer) return seconds
+                        break
+                    }
+
+                    while (start < end) {
+                        start++
+                        end--
+
+                        if (fullLine(start, end, curr)) {
+                            newLayer = true
+                            break
+                        }
+                    }
+                } while (start > 0 && end < width && curr < height && start < end)
+            }
+        }
+        
+        return 0
     }
 
     val input = readInput("Day14")
