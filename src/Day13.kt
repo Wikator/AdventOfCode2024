@@ -3,9 +3,9 @@ fun main() {
     data class LinearEquation(val a: Long, val b: Long, val c: Long)
 
     fun getClawMachines(input: List<String>, correction: Long): List<ClawMachine> {
-
+        val regex = Regex("\\d+")
+        
         fun getLongCoords(text: String, add: Long): LongCoords {
-            val regex = Regex("\\d+")
             val numbers = regex.findAll(text)
             return LongCoords(numbers.first().value.toLong() + add,
                 numbers.last().value.toLong() + add)
