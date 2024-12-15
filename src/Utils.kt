@@ -3,6 +3,17 @@ import java.security.MessageDigest
 import kotlin.io.path.Path
 import kotlin.io.path.readText
 
+enum class Direction {
+    Up, Right, Down, Left;
+
+    fun moveRight(): Direction = when (this) {
+        Up -> Right
+        Right -> Down
+        Down -> Left
+        Left -> Up
+    }
+}
+
 data class Coords(val x: Int, val y:Int) {
     fun distance(coords: Coords) = Coords(this.x - coords.x, this.y - coords.y)
     

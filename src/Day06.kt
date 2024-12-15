@@ -2,35 +2,24 @@ enum class Position {
     Obstacle, Empty, GuardUp, GuardRight, GuardDown, GuardLeft
 }
 
-enum class Direction {
-    Up, Right, Down, Left;
-
-    fun moveRight(): Direction = when (this) {
-        Up -> Right
-        Right -> Down
-        Down -> Left
-        Left -> Up
-    }
-}
-
-data class GuardPosition(val coords: Coords, val direction: Direction) {
-
-    fun getNextCoords(): Coords = when (direction) {
-        Direction.Up -> Coords(coords.x - 1, coords.y)
-        Direction.Right -> Coords(coords.x, coords.y + 1)
-        Direction.Down -> Coords(coords.x + 1, coords.y)
-        Direction.Left -> Coords(coords.x, coords.y - 1)
-    }
-    
-    fun getPreviousCoords(): Coords = when (direction) {
-        Direction.Up -> Coords(coords.x + 1, coords.y)
-        Direction.Right -> Coords(coords.x, coords.y - 1)
-        Direction.Down -> Coords(coords.x - 1, coords.y)
-        Direction.Left -> Coords(coords.x, coords.y + 1)
-    }
-}
-
 fun main() {
+
+    data class GuardPosition(val coords: Coords, val direction: Direction) {
+
+        fun getNextCoords(): Coords = when (direction) {
+            Direction.Up -> Coords(coords.x - 1, coords.y)
+            Direction.Right -> Coords(coords.x, coords.y + 1)
+            Direction.Down -> Coords(coords.x + 1, coords.y)
+            Direction.Left -> Coords(coords.x, coords.y - 1)
+        }
+
+        fun getPreviousCoords(): Coords = when (direction) {
+            Direction.Up -> Coords(coords.x + 1, coords.y)
+            Direction.Right -> Coords(coords.x, coords.y - 1)
+            Direction.Down -> Coords(coords.x - 1, coords.y)
+            Direction.Left -> Coords(coords.x, coords.y + 1)
+        }
+    }
 
     fun getPositions(input: List<String>): List<List<Position>> =
         input.map { text ->
