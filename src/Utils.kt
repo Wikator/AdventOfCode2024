@@ -12,6 +12,13 @@ enum class Direction {
         Down -> Left
         Left -> Up
     }
+
+    fun moveLeft(): Direction = when (this) {
+        Up -> Left
+        Right -> Up
+        Down -> Right
+        Left -> Down
+    }
 }
 
 data class Coords(val x: Int, val y:Int) {
