@@ -26,6 +26,20 @@ data class Coords(val x: Int, val y:Int) {
     
     fun adjacentCoords() = setOf(Coords(this.x - 1, this.y), Coords(this.x + 1, this.y),
         Coords(this.x, this.y - 1), Coords(this.x, this.y + 1))
+
+    fun getNextCoords(direction: Direction): Triple<Coords, Coords, Coords> = when (direction) {
+        Direction.Up -> Triple(Coords(this.x - 1, this.y), Coords(this.x, this.y - 1),
+            Coords(this.x, this.y + 1))
+
+        Direction.Right -> Triple(Coords(this.x, this.y + 1), Coords(this.x - 1, this.y),
+            Coords(this.x + 1, this.y))
+
+        Direction.Down -> Triple(Coords(this.x + 1, this.y), Coords(this.x, this.y + 1),
+            Coords(this.x, this.y - 1))
+
+        Direction.Left -> Triple(Coords(this.x, this.y - 1), Coords(this.x + 1, this.y),
+            Coords(this.x - 1, this.y))
+    }
 }
 
 data class LongCoords(val x: Long, val y:Long) {

@@ -112,20 +112,6 @@ fun main() {
         
         data class Arrow(val coords: Coords, val direction: Direction, val score: Int, val visited: Set<Coords>)
 
-        fun getNextCoords(coords: Coords, direction: Direction): Triple<Coords, Coords, Coords> = when (direction) {
-            Direction.Up -> Triple(Coords(coords.x - 1, coords.y), Coords(coords.x, coords.y - 1),
-                Coords(coords.x, coords.y + 1))
-
-            Direction.Right -> Triple(Coords(coords.x, coords.y + 1), Coords(coords.x - 1, coords.y),
-                Coords(coords.x + 1, coords.y))
-
-            Direction.Down -> Triple(Coords(coords.x + 1, coords.y), Coords(coords.x, coords.y + 1),
-                Coords(coords.x, coords.y - 1))
-
-            Direction.Left -> Triple(Coords(coords.x, coords.y - 1), Coords(coords.x + 1, coords.y),
-                Coords(coords.x - 1, coords.y))
-        }
-
         val (maze, start, end) = getMaze(input)
 
         var minPoints = Int.MAX_VALUE
@@ -151,7 +137,7 @@ fun main() {
                     continue
                 }
 
-                val (forwardCoords, sideCoords1, sideCoords2) = getNextCoords(arrow.coords, arrow.direction)
+                val (forwardCoords, sideCoords1, sideCoords2) = arrow.coords.getNextCoords(arrow.direction)
                 visited[Pair(arrow.coords, arrow.direction)] = arrow.score
 
                 if (!maze[forwardCoords.x][forwardCoords.y]) {
